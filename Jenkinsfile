@@ -27,21 +27,30 @@ node{
     }
     
     stage('Docker Image Build'){
+	    steps{
         echo 'Creating Docker image'
         sh "docker build -t $dockerHubUser/$containerName:$tag --pull --no-cache ."
     }  
+    }
 	
     stage('Publishing Image to DockerHub'){
         echo 'Pushing the docker image to DockerHub'
+	    steps{
         withCredentials([usernamePassword(credentialsId: 'dockerHubAccount', usernameVariable: 'dockerUser', passwordVariable: 'dockerPassword')]) {
 		sh "docker login -u $dockerUser -p $dockerPassword"
 		sh "docker push $dockerUser/$containerName:$tag"
 		echo "Image push complete"
         } 
     }    
+    }
 	
-	stage('Ansible Playbook Execution'){
-		sh "ansible-playbook -i inventory.yaml kubernetesDeploy.yaml -e httpPort=$httpPort -e containerName=$containerName -e dockerImageTag=$dockerHubUser/$containerName:$tag"
+	stage('Docker Deployment'){
+		steps{
+		sh "docker rm $containerName -f"
+		sh "docker pull $dockerHubUser/$containerName:$tag"
+		sh "docker run -d --rm -p $httpPort:$httpPort --name $containerName $dockerHubUser/$containerName:$tag"
+		echo "Application started on port: ${httpPort} (http)"
+	}
 	}
 }
 
