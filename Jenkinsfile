@@ -2,10 +2,10 @@ node{
     
     def tag, dockerHubUser, containerName, httpPort = ""
     
-    stage('Prepare Environment'){
+     environment {
         echo 'Initialize Environment'
-        tag="3.0"
-	withCredentials([usernamePassword(credentialsId: 'dockerHubAccount', usernameVariable: 'dockerUser', passwordVariable: 'dockerPassword')]) {
+        tag="1.0"
+	withCredentials([usernamePassword(credentialsId: 'DockerHubAccount', usernameVariable: 'dockerUser', passwordVariable: 'dockerPassword')]) {
 		dockerHubUser="$dockerUser"
         }
 	containerName="bankingapp"
